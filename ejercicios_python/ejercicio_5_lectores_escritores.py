@@ -68,6 +68,11 @@ def lector(id_lector, iteraciones=2):
         # if readcounter == 1:
         #     sem_write.acquire() # El primer lector bloquea a cualquier escritor
         # mutex.release()
+        mutex.acquire()
+        readcounter += 1
+        if readcounter == 1:
+            sem_write.acquire()
+        mutex.release()
 
         # --- SECCIÓN CRÍTICA DE LECTURA (COMPARTIDA) ---
         log(f"📖 Lector {id_lector} LEYENDO datos (v{base_de_datos['version']}) | Lectores activos: {readcounter}")
@@ -82,6 +87,16 @@ def lector(id_lector, iteraciones=2):
         # if readcounter == 0:
         #     sem_write.release() # El último lector libera la BD para los escritores
         # mutex.release()
+        # --- SALIDA DEL LECTOR ---
+        mutex.acquire()
+        readcounter -= 1
+        if readcounter == 0:
+            sem_write.release()
+        mutex.release()
+        # ... (código de lectura intermedio queda igual) ...
+
+        
+
 
 # ============================================================================
 # PROCESO ESCRITOR
@@ -102,6 +117,10 @@ def escritor(id_escritor, iteraciones=2):
         # TODO PARA EL ESTUDIANTE:
         # Adquiere el semáforo 'sem_write' para exclusión mutua total
         # sem_write.acquire()
+        # ENTRADA DEL ESCRITOR
+        sem_write.acquire()
+
+        # ... (código de escritura intermedio queda igual) ...
 
         # --- SECCIÓN CRÍTICA DE ESCRITURA (ESTRICTAMENTE EXCLUSIVA) ---
         nueva_version = base_de_datos["version"] + 1
@@ -114,6 +133,8 @@ def escritor(id_escritor, iteraciones=2):
         # TODO PARA EL ESTUDIANTE:
         # Libera el semáforo 'sem_write'
         # sem_write.release()
+        # --- SALIDA DEL ESCRITOR ---
+        sem_write.release()
 
 if __name__ == "__main__":
     print("=" * 70)
